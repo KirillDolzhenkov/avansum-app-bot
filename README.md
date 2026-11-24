@@ -1,4 +1,4 @@
-# Бот разбора заявок на окна
+# Бот разбора заявок на окна / двери
 
 ![Node.js](https://img.shields.io/badge/Node.js-24-339933?logo=nodedotjs&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
