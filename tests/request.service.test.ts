@@ -336,7 +336,15 @@ describe('RequestService — dialog flow and errors', () => {
     const msg = 'Окно 1000х1200';
     const { service } = setup({ [msg]: new AiError('timeout', 'Gemini request timed out', true) });
     const reply = await service.handleMessage(CHAT, msg);
-    expect(reply).toEqual({ kind: 'error' });
+    expect(reply).toEqual({ kind: 'error', reason: 'unavailable' });
     expect(formatReply(reply).text).not.toMatch(/gemini|timeout|api/i);
+  });
+
+  it('exhausted quota gets its own message', async () => {
+    const msg = 'Окно 1000х1200';
+    const { service } = setup({ [msg]: new AiError('rate_limit', 'quota exceeded', false) });
+    const reply = await service.handleMessage(CHAT, msg);
+    expect(reply).toEqual({ kind: 'error', reason: 'rate_limit' });
+    expect(formatReply(reply).text).toContain('перегружен');
   });
 });

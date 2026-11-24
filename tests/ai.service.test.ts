@@ -27,6 +27,14 @@ describe('AiService', () => {
     expect(provider.requests[0]?.userPrompt).toContain('привет');
   });
 
+  it('does not retry when the quota is exhausted', async () => {
+    const provider = new ScriptedProvider([new AiError('rate_limit', 'quota', false), valid]);
+    await expect(new AiService(provider).extract('x', { draft: null, pendingQuestion: null })).rejects.toMatchObject({
+      kind: 'rate_limit',
+    });
+    expect(provider.requests).toHaveLength(1);
+  });
+
   it('retries once after invalid JSON', async () => {
     const provider = new ScriptedProvider(['not json', valid]);
     const result = await new AiService(provider).extract('привет', { draft: null, pendingQuestion: null });

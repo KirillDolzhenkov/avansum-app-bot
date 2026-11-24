@@ -35,8 +35,12 @@ export class GeminiProvider implements AiProvider {
         throw new AiError('timeout', 'Gemini request timed out', true, { cause: error });
       }
       if (error instanceof ApiError) {
-        const retryable = error.status === 429 || error.status >= 500;
-        throw new AiError('api', `Gemini API error ${error.status}: ${error.message}`, retryable, { cause: error });
+        if (error.status === 429) {
+          throw new AiError('rate_limit', `Gemini rate limit exceeded: ${error.message}`, false, { cause: error });
+        }
+        throw new AiError('api', `Gemini API error ${error.status}: ${error.message}`, error.status >= 500, {
+          cause: error,
+        });
       }
       throw new AiError('api', 'Gemini request failed', true, { cause: error });
     }

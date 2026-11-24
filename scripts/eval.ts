@@ -120,7 +120,7 @@ async function main(): Promise<void> {
   let passed = 0;
   for (const [index, testCase] of cases.entries()) {
     const service = new RequestService(ai, new ConversationService());
-    let reply: Reply = { kind: 'error' };
+    let reply: Reply = { kind: 'error', reason: 'unavailable' };
     for (const message of testCase.messages) {
       reply = await service.handleMessage(index, message);
     }

@@ -13,7 +13,7 @@ export interface AiJsonRequest {
   signal: AbortSignal;
 }
 
-export type AiErrorKind = 'timeout' | 'api' | 'invalid_response';
+export type AiErrorKind = 'timeout' | 'api' | 'rate_limit' | 'invalid_response';
 
 export class AiError extends Error {
   constructor(

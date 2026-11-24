@@ -1,4 +1,5 @@
 import type { Extractor } from '../ai/ai.service.js';
+import { AiError } from '../ai/ai.provider.js';
 import type { LlmExtraction } from '../schemas/llm.schema.js';
 import {
   emptyDraft,
@@ -29,7 +30,7 @@ export type Reply =
   | { kind: 'nothing_to_confirm' }
   | { kind: 'cancelled'; hadDraft: boolean }
   | { kind: 'invalid_input'; reason: 'empty' | 'too_long' }
-  | { kind: 'error' };
+  | { kind: 'error'; reason: 'rate_limit' | 'unavailable' };
 
 const MAX_MESSAGE_LENGTH = 2000;
 
@@ -60,7 +61,8 @@ export class RequestService {
       });
     } catch (error) {
       logger.error(`AI extraction failed for chat ${chatId}`, error);
-      return { kind: 'error' };
+      const reason = error instanceof AiError && error.kind === 'rate_limit' ? 'rate_limit' : 'unavailable';
+      return { kind: 'error', reason };
     }
 
     const grounded = groundExtraction(extraction, message);
