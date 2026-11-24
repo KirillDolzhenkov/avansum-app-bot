@@ -84,14 +84,8 @@ export class RequestService {
       if (!isRequest) return { kind: 'not_request', hadQuestion: asksQuestion };
     }
 
-    let draft = session ? structuredClone(session.draft) : emptyDraft();
-    let pendingField = session?.pendingField ?? null;
-
-    if (session && data.intent === 'request' && hasData && patch.products.some((p) => p.product.type !== null)) {
-      draft = emptyDraft();
-      pendingField = null;
-      notes.push('Начинаю новую заявку вместо незавершённой. Если это дополнение — напишите /cancel и отправьте всё одним сообщением.');
-    }
+    const draft = session ? structuredClone(session.draft) : emptyDraft();
+    const pendingField = session?.pendingField ?? null;
 
     if (session && !hasData && notes.length === 0) {
       notes.push('Не нашёл в сообщении данных для заявки.');

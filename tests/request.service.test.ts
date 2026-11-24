@@ -309,20 +309,25 @@ describe('RequestService — dialog flow and errors', () => {
     expect(reply.question).toContain('телефон или email');
   });
 
-  it('a new full request during a dialog replaces the draft and says so', async () => {
+  it('a typed product during a dialog is added to the same draft, not replaced', async () => {
     const first = 'Окно 1000х1200';
     const second = 'Дверь 700х2100 1 шт, +375291234567';
     const { service } = setup({
       [first]: extraction({ products: [product({ type: 'окно', width: dim(1000), height: dim(1200) })] }),
       [second]: extraction({
+        intent: 'request',
         products: [product({ type: 'дверь', width: dim(700), height: dim(2100), quantity: 1 })],
         customer: { phoneRaw: '+375291234567' },
       }),
     });
     await service.handleMessage(CHAT, first);
-    const reply = expectKind(await service.handleMessage(CHAT, second), 'confirm');
-    expect(reply.request.products).toEqual([{ type: 'дверь', width: 700, height: 2100, quantity: 1 }]);
-    expect(reply.notes[0]).toContain('новую заявку');
+    const reply = expectKind(await service.handleMessage(CHAT, second), 'clarify');
+    expect(reply.request.products).toEqual([
+      { type: 'окно', width: 1000, height: 1200, quantity: null },
+      { type: 'дверь', width: 700, height: 2100, quantity: 1 },
+    ]);
+    expect(reply.request.customer.phone).toBe('+375 (29) 123-45-67');
+    expect(reply.question).toBe('Сколько штук нужно (окно №1)?');
   });
 
   it('empty and too long messages do not reach the AI', async () => {
