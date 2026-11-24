@@ -13,7 +13,24 @@ export interface Extractor {
   extract(message: string, context: ParseRequestContext): Promise<LlmExtraction>;
 }
 
-const { $schema: _ignored, ...extractionJsonSchema } = z.toJSONSchema(LlmExtractionSchema, { target: 'draft-07' });
+/**
+ * Zod adds `minimum/maximum: ±Number.MAX_SAFE_INTEGER` to every `.int()`.
+ * Strict structured-output modes may reject such bounds, and they carry no meaning, so we drop them.
+ */
+export function toProviderSchema(schema: unknown): unknown {
+  if (Array.isArray(schema)) return schema.map(toProviderSchema);
+  if (schema === null || typeof schema !== 'object') return schema;
+
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(schema)) {
+    if (key === '$schema') continue;
+    if ((key === 'minimum' || key === 'maximum') && Math.abs(Number(value)) === Number.MAX_SAFE_INTEGER) continue;
+    result[key] = toProviderSchema(value);
+  }
+  return result;
+}
+
+const extractionJsonSchema = toProviderSchema(z.toJSONSchema(LlmExtractionSchema, { target: 'draft-07' }));
 
 export class AiService implements Extractor {
   constructor(

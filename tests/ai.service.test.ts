@@ -27,6 +27,15 @@ describe('AiService', () => {
     expect(provider.requests[0]?.userPrompt).toContain('привет');
   });
 
+  it('sends a schema without $schema and safe-integer bounds', async () => {
+    const provider = new ScriptedProvider([valid]);
+    await new AiService(provider).extract('привет', { draft: null, pendingQuestion: null });
+    const schema = JSON.stringify(provider.requests[0]?.jsonSchema);
+    expect(schema).not.toContain(String(Number.MAX_SAFE_INTEGER));
+    expect(schema).not.toContain('$schema');
+    expect(schema).toContain('"integer"');
+  });
+
   it('does not retry when the quota is exhausted', async () => {
     const provider = new ScriptedProvider([new AiError('rate_limit', 'quota', false), valid]);
     await expect(new AiService(provider).extract('x', { draft: null, pendingQuestion: null })).rejects.toMatchObject({

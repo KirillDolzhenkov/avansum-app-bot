@@ -1,12 +1,12 @@
 /**
- * Runs realistic dialogs through the real Gemini model and the full pipeline
- * (grounding, normalization, merge) and prints a pass/fail report.
- * Unlike unit tests, this checks the prompt itself. Requires GEMINI_API_KEY.
+ * Runs realistic dialogs through the configured real model (AI_PROVIDER, see .env.example)
+ * and the full pipeline (grounding, normalization, merge) and prints a pass/fail report.
+ * Unlike unit tests, this checks the prompt itself. Uses the same API quota as the bot.
  *
  *   npm run eval
  */
-import 'dotenv/config';
-import { GeminiProvider } from '../src/ai/gemini.provider.js';
+import { loadAiConfig } from '../src/config/env.js';
+import { createProvider } from '../src/ai/create-provider.js';
 import { AiService } from '../src/ai/ai.service.js';
 import { ConversationService } from '../src/services/conversation.service.js';
 import { RequestService, type Reply } from '../src/services/request.service.js';
@@ -112,10 +112,8 @@ const cases: Case[] = [
 ];
 
 async function main(): Promise<void> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY is not set');
-  const model = process.env.GEMINI_MODEL?.trim() || 'gemini-3.8-flash';
-  const ai = new AiService(new GeminiProvider(apiKey, model));
+  const config = loadAiConfig();
+  const ai = new AiService(createProvider(config));
 
   let passed = 0;
   for (const [index, testCase] of cases.entries()) {
@@ -131,7 +129,7 @@ async function main(): Promise<void> {
       console.log(formatReply(reply).text.replace(/^/gm, '      '));
     }
   }
-  console.log(`\n${passed}/${cases.length} passed (model: ${model})`);
+  console.log(`\n${passed}/${cases.length} passed (provider: ${config.provider}, model: ${config.model})`);
   process.exitCode = passed === cases.length ? 0 : 1;
 }
 
