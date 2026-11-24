@@ -16,13 +16,13 @@ const required = (name: string) => optional.pipe(z.string({ error: `${name} is r
 const GeminiConfigSchema = z
   .object({
     AI_PROVIDER: z.literal('gemini'),
-    GEMINI_API_KEY: required('GEMINI_API_KEY'),
-    GEMINI_MODEL: optional,
+    AI_API_KEY: required('AI_API_KEY'),
+    AI_MODEL: optional,
   })
   .transform((env) => ({
     provider: 'gemini' as const,
-    apiKey: env.GEMINI_API_KEY,
-    model: env.GEMINI_MODEL ?? DEFAULT_GEMINI_MODEL,
+    apiKey: env.AI_API_KEY,
+    model: env.AI_MODEL ?? DEFAULT_GEMINI_MODEL,
   }));
 
 const OpenAiConfigSchema = z
@@ -44,7 +44,7 @@ const OpenAiConfigSchema = z
 const AiConfigSchema = z.preprocess(
   (source) => {
     const env = source as Record<string, string | undefined>;
-    return { ...env, AI_PROVIDER: env.AI_PROVIDER?.trim().toLowerCase() || 'gemini' };
+    return { ...env, AI_PROVIDER: env.AI_PROVIDER?.trim().toLowerCase() || 'openai' };
   },
   z.discriminatedUnion('AI_PROVIDER', [GeminiConfigSchema, OpenAiConfigSchema]),
 );

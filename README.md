@@ -4,7 +4,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![grammY](https://img.shields.io/badge/grammY-Telegram-26A5E4?logo=telegram&logoColor=white)
 ![LLM](https://img.shields.io/badge/LLM-Gemini%20%7C%20Groq-8E75B2)
-![Tests](https://img.shields.io/badge/tests-77%20passed-brightgreen)
+![Tests](https://img.shields.io/badge/tests-78%20passed-brightgreen)
 
 Telegram-бот, который превращает заявку покупателя в свободной форме в аккуратную структуру: тип изделия, размеры в миллиметрах, количество и контакты. Если данных не хватает, бот уточняет. Если сообщение не заявка, бот прямо об этом говорит.
 
@@ -132,7 +132,7 @@ Node.js 24, TypeScript (strict), [grammY](https://grammy.dev), [Gemini API](http
 ## Тесты
 
 ```bash
-npm test        # 77 unit-тестов, без сети: модель заменена фейком
+npm test        # 78 unit-тестов, без сети: модель заменена фейком
 npm run eval    # 13 сценариев из задания через настоящую модель (тратит ту же квоту, что и бот)
 ```
 
@@ -140,20 +140,18 @@ Unit-тесты проверяют детерминированную часть
 
 ## AI-провайдер
 
-Провайдер выбирается переменной `AI_PROVIDER`. Без неё используется Gemini.
+Переменные не привязаны к конкретному вендору: провайдер выбирается `AI_PROVIDER`, а ключ и модель всегда задаются через `AI_API_KEY` и `AI_MODEL`. По умолчанию используется OpenAI-совместимый API Groq.
 
 | Переменная | Когда нужна | По умолчанию |
 | --- | --- | --- |
 | `BOT_TOKEN` | всегда | — |
-| `AI_PROVIDER` | — | `gemini` (или `openai`) |
-| `GEMINI_API_KEY` | `AI_PROVIDER=gemini` | — |
-| `GEMINI_MODEL` | — | `gemini-3.8-flash` |
-| `AI_API_KEY` | `AI_PROVIDER=openai` | — |
-| `AI_BASE_URL` | — | `https://api.groq.com/openai/v1` |
-| `AI_MODEL` | — | `openai/gpt-oss-120b` |
-| `AI_REASONING_EFFORT` | — | не передаётся (`low` / `medium` / `high`) |
+| `AI_PROVIDER` | — | `openai` (или `gemini`) |
+| `AI_API_KEY` | всегда | — |
+| `AI_MODEL` | — | `openai/gpt-oss-120b` для `openai`, `gemini-3.8-flash` для `gemini` |
+| `AI_BASE_URL` | только `openai` | `https://api.groq.com/openai/v1` |
+| `AI_REASONING_EFFORT` | только `openai` | не передаётся (`low` / `medium` / `high`) |
 
-**Переключение на Groq.** У бесплатного тарифа Gemini для части моделей всего 20 запросов в день. У Groq для `openai/gpt-oss-120b` около 1000 запросов в день, 8K токенов в минуту и 200K токенов в день (точные цифры в консоли Groq, раздел Limits), и отвечает он за доли секунды.
+**Groq (по умолчанию).** Для `openai/gpt-oss-120b` около 1000 запросов в день, 8K токенов в минуту и 200K токенов в день (точные цифры в консоли Groq, раздел Limits), отвечает за доли секунды. У бесплатного тарифа Gemini для части моделей всего 20 запросов в день, поэтому основным провайдером выбран Groq.
 
 1. Зарегистрируйтесь на [console.groq.com](https://console.groq.com) и создайте ключ в разделе API Keys.
 2. Задайте переменные (в `.env` или в Railway → Variables):
@@ -167,6 +165,8 @@ AI_REASONING_EFFORT=low
 `AI_REASONING_EFFORT=low` заметно экономит токены у reasoning-модели gpt-oss: для извлечения данных глубокие рассуждения не нужны. При старте в логах должна появиться строка `Starting bot (provider: openai, model: openai/gpt-oss-120b)`.
 
 Другой OpenAI-совместимый провайдер подключается так же, сменой `AI_BASE_URL`, `AI_API_KEY` и `AI_MODEL`. Модель должна поддерживать `response_format: json_schema` в strict-режиме.
+
+**Вернуться на Gemini** можно без изменения кода: `AI_PROVIDER=gemini`, ключ из [Google AI Studio](https://aistudio.google.com/apikey) в `AI_API_KEY` и при необходимости модель в `AI_MODEL`.
 
 ## Локальный запуск
 
